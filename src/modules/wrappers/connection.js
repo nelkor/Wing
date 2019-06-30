@@ -49,10 +49,9 @@ const make_reader = connection => {
 };
 
 /**
- * Оборачивает сокет в объект-connection  
- * 
  * @param {WebSocket} socket
  * @param {IncomingMessage} req
+ * @returns {object} объект-connection
  */
 export default (socket, req) => {
     const connection = Object.create(null);

@@ -2,7 +2,7 @@
 import ws from 'ws';
 
 // modules
-import make_connection from './connection.js';
+import make_connection from './wrappers/connection.js';
 
 /**
  * Колбэк каждого нового подключения (сокета)  
