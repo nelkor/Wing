@@ -36,6 +36,11 @@ const makeReader = connection => {
     return message => {
         switch (message.event) {
             case 'auth':
+
+                // Создать обёртку-плеер на основе конекшена
+                // Пихнуть плеера в пул плееров
+                // Ответить клиенту
+
                 break;
             case 'reg':
                 break;

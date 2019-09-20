@@ -5,15 +5,15 @@ import ws from 'ws';
 import makeConnection from './wrappers/connection.js';
 
 /**
- * Колбэк каждого нового подключения (сокета)  
- * 
- * Асинк: логирование подключений в БД  
+ * Колбэк каждого нового подключения (сокета)
  * 
  * @param {WebSocket} socket
  * @param {IncomingMessage} req
  */
-const onConnection = async (socket, req) => {
+const onConnection = (socket, req) => {
     const connection = makeConnection(socket, req);
+
+    // Пихнуть конекшена в пул конекшенов
 };
 
 /**
