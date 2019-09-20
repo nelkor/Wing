@@ -14,6 +14,9 @@ const onConnection = (socket, req) => {
     const connection = makeConnection(socket, req);
 
     // Пихнуть конекшена в пул конекшенов
+
+    // TODO: Добавить обработчик дисконекта
+    // Например, убрать конекшена из пула конекшенов
 };
 
 /**
