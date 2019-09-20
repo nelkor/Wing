@@ -2,7 +2,7 @@
 import ws from 'ws';
 
 // modules
-import make_connection from './wrappers/connection.js';
+import makeConnection from './wrappers/connection.js';
 
 /**
  * Колбэк каждого нового подключения (сокета)  
@@ -12,8 +12,8 @@ import make_connection from './wrappers/connection.js';
  * @param {WebSocket} socket
  * @param {IncomingMessage} req
  */
-const on_connection = async (socket, req) => {
-    const connection = make_connection(socket, req);
+const onConnection = async (socket, req) => {
+    const connection = makeConnection(socket, req);
 };
 
 /**
@@ -24,7 +24,7 @@ const on_connection = async (socket, req) => {
 export default port => {
     const server = new ws.Server({ port });
 
-    server.on('connection', on_connection);
+    server.on('connection', onConnection);
 
     console.log(`Server started! Port: ${port}`);
 };

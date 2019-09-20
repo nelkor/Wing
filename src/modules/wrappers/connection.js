@@ -2,7 +2,7 @@
  * @param {object} socket
  * @returns {function} функция отправки JSON-сообщений по сокету
  */
-const make_send = socket => {
+const makeSend = socket => {
     return (event, data) => {
         const str = JSON.stringify({ event, data });
 
@@ -13,7 +13,7 @@ const make_send = socket => {
 /**
  * @returns {object} объект-диспетчер
  */
-const make_dispatcher = () => {
+const makeDispatcher = () => {
     const stack = [];
 
     // Методы диспетчера:
@@ -32,7 +32,7 @@ const make_dispatcher = () => {
  * @param {object} connection
  * @returns {function} функция чтения входящих сообщений
  */
-const make_reader = connection => {
+const makeReader = connection => {
     return message => {
         switch (message.event) {
             case 'auth':
@@ -41,7 +41,7 @@ const make_reader = connection => {
                 break;
             case 'token':
                 break;
-            case 'get_state':
+            case 'getState':
                 connection.send('state', 'connection');
                 break;
         }
@@ -57,13 +57,13 @@ export default (socket, req) => {
     const connection = Object.create(null);
 
     connection.ip = req.connection.remoteAddress;
-    connection.send = make_send(socket);
+    connection.send = makeSend(socket);
     connection.state = Object.create(null);
-    connection.dispatcher = make_dispatcher();
+    connection.dispatcher = makeDispatcher();
 
-    connection.dispatcher.set(make_reader(connection));
+    connection.dispatcher.set(makeReader(connection));
 
-    const on_message = message => {
+    const onMessage = message => {
         try {
             message = JSON.parse(message);
         } catch (e) {
@@ -73,9 +73,9 @@ export default (socket, req) => {
         const reader = connection.dispatcher.get();
 
         reader(message);
-    }
+    };
 
-    socket.on('message', on_message);
+    socket.on('message', onMessage);
 
     // TODO придумать логику пингования
     connection.ping = () => socket.ping();
