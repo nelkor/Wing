@@ -88,7 +88,15 @@ export default (socket, req) => {
         reader(message);
     };
 
+    // TODO: Добавить обработчик дисконекта
+    // Если конекшен обёрнут в плеера, плееру конекшен надо отсоединить
+    // Потом удалить конекшена из пула конекшенов
+    const onClose = () => {
+        console.log('Disconnect!', connection.ip);
+    };
+
     socket.on('message', onMessage);
+    socket.on('close', onClose);
 
     // TODO придумать логику пингования
     connection.ping = () => socket.ping();

@@ -18,10 +18,6 @@ const onConnection = (socket, req) => {
     log('connection', connection.ip);
 
     connectionToPool(connection);
-
-    // TODO: Добавить обработчик дисконекта
-    // Если конекшен обёрнут в плеера, плееру конекшен надо отсоединить
-    // Потом удалить конекшена из пула конекшенов
 };
 
 /**
