@@ -2,7 +2,9 @@
 import ws from 'ws';
 
 // modules
-import makeConnection from './wrappers/connection.js';
+import makeConnection from './wrappers/connection';
+import log from './journal';
+import connectionToPool from './pools/connections';
 
 /**
  * Колбэк каждого нового подключения (сокета)
@@ -13,10 +15,13 @@ import makeConnection from './wrappers/connection.js';
 const onConnection = (socket, req) => {
     const connection = makeConnection(socket, req);
 
-    // Пихнуть конекшена в пул конекшенов
+    log('connection', connection.ip);
+
+    connectionToPool(connection);
 
     // TODO: Добавить обработчик дисконекта
-    // Например, убрать конекшена из пула конекшенов
+    // Если конекшен обёрнут в плеера, плееру конекшен надо отсоединить
+    // Потом удалить конекшена из пула конекшенов
 };
 
 /**
