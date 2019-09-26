@@ -3,7 +3,7 @@ import ws from 'ws';
 
 // modules
 import makeConnection from './wrappers/connection';
-import log from './journal';
+import log from './journal/index';
 import connectionToPool from './pools/connections';
 
 /**
