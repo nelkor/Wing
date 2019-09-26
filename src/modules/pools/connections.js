@@ -2,6 +2,4 @@
 
 const connections = [];
 
-export default connection => {
-    connections.push(connection);
-};
+export default connection => connections.push(connection);

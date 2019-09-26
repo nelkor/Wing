@@ -1,3 +1,8 @@
+// modules
+import { log } from '../journal/index';
+import makePlayer from './player';
+import { findPlayer, playerToPool } from '../pools/players';
+
 /**
  * @param {object} socket
  * @returns {function} функция отправки JSON-сообщений по сокету
@@ -37,19 +42,43 @@ const makeReader = connection => {
         switch (message.event) {
             case 'auth':
 
-                // Возможно этот плеер уже сидит в пуле плееров
-                // Чи да и он имеет конекшена - например, запретить вход
-                // (либо выкинуть того конекшена и подменить этим)
-                // Чи не, про пихнуть конекшена в этого плеера
+                // Положительный результат авторизации
+                const userId = 1;
+                const name = 'Nelkor';
 
-                // Если в пуле плееров этого плеера нет:
-                // Создать обёртку-плеер на основе конекшена
-                // Пихнуть плеера в пул плееров
-                // Ответить клиенту
+                // Возможно этот плеер уже сидит в пуле плееров
+                const inPool = findPlayer(userId);
+
+                if (!inPool) {
+                    // Не сидит
+
+                    // Создать обёртку-плеер на основе конекшена
+                    const player = makePlayer(connection, userId);
+                    // Пихнуть плеера в пул плееров
+                    playerToPool(player);
+
+                    // Ответить клиенту
+                    const data = {
+                        name,
+                        ok: true,
+                        // reconnect: false,
+                        // replacement: false,
+                    };
+
+                    connection.send('auth', data);
+                } else {
+                    // Сидит
+
+                    // Чи он имеет конекшена -
+                    // выкинуть того конекшена и подменить этим
+                    // Чи не имеет, пихнуть конекшена в этого плеера
+
+                    // Ответить клиенту
+                }
 
                 break;
-            // case 'reg':
-            //     break;
+            case 'reg':
+                break;
             case 'token':
                 break;
             case 'logout':
@@ -64,6 +93,7 @@ const makeReader = connection => {
 /**
  * @param {WebSocket} socket
  * @param {IncomingMessage} req
+ *
  * @returns {object} объект-connection
  */
 export default (socket, req) => {
@@ -92,7 +122,7 @@ export default (socket, req) => {
     // Если конекшен обёрнут в плеера, плееру конекшен надо отсоединить
     // Потом удалить конекшена из пула конекшенов
     const onClose = () => {
-        console.log('Disconnect!', connection.ip);
+        log('disconnect!', connection.ip);
     };
 
     socket.on('message', onMessage);
