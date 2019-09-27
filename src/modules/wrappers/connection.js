@@ -2,13 +2,14 @@
 import { log } from '../journal/index';
 import makePlayer from './player';
 import { findPlayer, playerToPool } from '../pools/players';
+import { rmConFromPool } from '../pools/connections';
 
 /**
  * @param {object} socket
  * @returns {function} функция отправки JSON-сообщений по сокету
  */
 const makeSend = socket => {
-    return (event, data) => {
+    return (event, data = null) => {
         const str = JSON.stringify({ event, data });
 
         socket.send(str);
@@ -50,8 +51,6 @@ const makeReader = connection => {
                 const inPool = findPlayer(userId);
 
                 if (!inPool) {
-                    // Не сидит
-
                     // Создать обёртку-плеер на основе конекшена
                     const player = makePlayer(connection, userId);
                     // Пихнуть плеера в пул плееров
@@ -67,8 +66,6 @@ const makeReader = connection => {
 
                     connection.send('auth', data);
                 } else {
-                    // Сидит
-
                     // Чи он имеет конекшена -
                     // выкинуть того конекшена и подменить этим
                     // Чи не имеет, пихнуть конекшена в этого плеера
@@ -118,11 +115,12 @@ export default (socket, req) => {
         reader(message);
     };
 
-    // TODO: Добавить обработчик дисконекта
-    // Если конекшен обёрнут в плеера, плееру конекшен надо отсоединить
-    // Потом удалить конекшена из пула конекшенов
     const onClose = () => {
         log('disconnect!', connection.ip);
+
+        if (connection.player) connection.player.disconnect();
+
+        rmConFromPool(connection);
     };
 
     socket.on('message', onMessage);
