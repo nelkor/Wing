@@ -42,6 +42,8 @@ const makeDispatcher = () => {
 const makeReader = connection => {
     return async message => {
         switch (message.event) {
+            // Нечитаемая ифовая логика (но работает как часы).
+            // Надеюсь, что когда-нибудь смогу переделать красиво
             case 'auth':
                 if (!message.data) return;
 
@@ -142,8 +144,8 @@ const makeReader = connection => {
 };
 
 /**
- * @param {WebSocket} socket
- * @param {IncomingMessage} req
+ * @param {{ on, ping, terminate }} socket
+ * @param {{ connection: { remoteAddress } }} req
  *
  * @returns {object} объект-connection
  */
@@ -155,6 +157,9 @@ export default (socket, req) => {
     connection.state = Object.create(null);
     connection.dispatcher = makeDispatcher();
     connection.authAttempts = {};
+    connection.isAlive = true;
+    connection.terminate = () => socket.terminate();
+    connection.ping = () => socket.ping();
 
     connection.dispatcher.set(makeReader(connection));
 
@@ -180,9 +185,7 @@ export default (socket, req) => {
 
     socket.on('message', onMessage);
     socket.on('close', onClose);
-
-    // TODO придумать логику пингования
-    connection.ping = () => socket.ping();
+    socket.on('pong', () => connection.isAlive = true);
 
     return connection;
 };

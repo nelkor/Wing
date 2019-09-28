@@ -15,7 +15,7 @@ const playerExplorer = (player, index) => {
         if (Date.now() > player.dcTime + hangingTime) {
             players.splice(index, 1);
 
-            console.log('Удалил его!');
+            console.log('Удалил из пула игрока с ID', player.userId);
         }
 
         return;
