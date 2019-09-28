@@ -2,8 +2,8 @@
 // Шоб плеер оставался в системе при отвале конекшена
 // Если плеер остался без конекшена - удалить его через 5 минут
 
-// Пять минут
-const hangingTime = 3e4;
+// Пять минут - 3e5 миллисекунд
+const hangingTime = 3e5;
 
 const players = [];
 
@@ -25,7 +25,7 @@ const playerExplorer = (player, index) => {
 };
 
 const playersTick = () => {
-    console.log('Players tick');
+    console.log('Players tick!');
 
     players.forEach(playerExplorer);
 
@@ -35,6 +35,6 @@ const playersTick = () => {
 
 setInterval(playersTick, 1e4);
 
-export const findPlayer = id => players.find(p => p.id == id);
+export const findPlayer = id => players.find(p => p.userId == id);
 
 export const playerToPool = player => players.push(player);

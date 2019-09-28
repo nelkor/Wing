@@ -5,14 +5,11 @@ import { log } from '../journal/index';
  * @returns {function} функция чтения входящих сообщений
  */
 const makeReader = player => {
-    return message => {
+    return async message => {
         const connection = player.connection;
 
         switch (message.event) {
             case 'logout':
-                connection.dispatcher.rollback();
-                connection.player = null;
-
                 player.disconnect();
 
                 connection.send('logout');
@@ -29,22 +26,26 @@ const makeReader = player => {
 };
 
 /**
- * @param {Object} connection
  * @param {number} userId
- *
  * @returns {object} объект-плеер
  */
-export default (connection, userId) => {
+export default userId => {
     const player = Object.create(null);
 
-    connection.player = player;
-    connection.dispatcher.set(makeReader(player));
-
-    player.connection = connection;
     player.userId = userId;
     player.state = Object.create(null);
 
+    player.connect = connection => {
+        connection.player = player;
+        connection.dispatcher.set(makeReader(player));
+
+        player.connection = connection;
+    };
+
     player.disconnect = () => {
+        player.connection.dispatcher.rollback();
+        player.connection.player = null;
+
         player.connection = null;
         player.dcTime = Date.now();
 

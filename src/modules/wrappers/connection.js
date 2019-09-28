@@ -3,6 +3,7 @@ import { log } from '../journal/index';
 import makePlayer from './player';
 import { findPlayer, playerToPool } from '../pools/players';
 import { rmConFromPool } from '../pools/connections';
+import { logIn } from '../auth/index';
 
 /**
  * @param {object} socket
@@ -39,38 +40,91 @@ const makeDispatcher = () => {
  * @returns {function} функция чтения входящих сообщений
  */
 const makeReader = connection => {
-    return message => {
+    return async message => {
         switch (message.event) {
             case 'auth':
+                if (!message.data) return;
 
-                // Положительный результат авторизации
-                const userId = 1;
-                const name = 'Nelkor';
+                const { name, password } = message.data;
+                const result = await logIn(name, password);
 
-                // Возможно этот плеер уже сидит в пуле плееров
+                if (!result.ok) {
+                    const data = { reason: result.reason };
+
+                    connection.send('auth', data);
+
+                    return;
+                }
+
+                const { id: userId, name: userName } = result;
                 const inPool = findPlayer(userId);
 
-                if (!inPool) {
-                    // Создать обёртку-плеер на основе конекшена
-                    const player = makePlayer(connection, userId);
-                    // Пихнуть плеера в пул плееров
-                    playerToPool(player);
+                if (inPool) {
+                    if (inPool.connection) {
+                        const attempts = connection.authAttempts;
+                        const id = inPool.userId;
 
-                    // Ответить клиенту
+                        const replace = attempts[id]
+                            && attempts[id] < Date.now() + 6e4;
+
+                        if (replace) {
+                            const notice = { replacement: true };
+
+                            inPool.connection.send('logout', notice);
+
+                            inPool.disconnect();
+                            inPool.connect(connection);
+
+                            const data = {
+                                ok: true,
+                                name: userName,
+                                replacement: true,
+                            };
+
+                            connection.send('auth', data);
+
+                            return;
+                        }
+
+                        attempts[id] = Date.now();
+
+                        const cpNotice = { replacement: true };
+
+                        const ccNotice = {
+                            name: userName,
+                            replacement: true,
+                        };
+
+                        inPool.connection.send('notice', cpNotice);
+
+                        connection.send('auth', ccNotice);
+
+                        return;
+                    }
+
+                    inPool.connect(connection);
+
                     const data = {
-                        name,
                         ok: true,
-                        // reconnect: false,
-                        // replacement: false,
+                        name: userName,
+                        reconnect: true,
                     };
 
                     connection.send('auth', data);
                 } else {
-                    // Чи он имеет конекшена -
-                    // выкинуть того конекшена и подменить этим
-                    // Чи не имеет, пихнуть конекшена в этого плеера
 
-                    // Ответить клиенту
+                    const player = makePlayer(userId);
+
+                    player.connect(connection);
+
+                    playerToPool(player);
+
+                    const data = {
+                        ok: true,
+                        name: userName,
+                    };
+
+                    connection.send('auth', data);
                 }
 
                 break;
@@ -100,6 +154,7 @@ export default (socket, req) => {
     connection.send = makeSend(socket);
     connection.state = Object.create(null);
     connection.dispatcher = makeDispatcher();
+    connection.authAttempts = {};
 
     connection.dispatcher.set(makeReader(connection));
 
