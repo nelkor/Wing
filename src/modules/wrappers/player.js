@@ -12,7 +12,7 @@ const makeReader = player => {
             case 'logout':
                 player.disconnect();
 
-                connection.send('logout');
+                connection.send('logout', { reason: 'at will' });
                 break;
             case 'startSearch':
                 break;

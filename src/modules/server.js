@@ -10,7 +10,7 @@ import { connectionToPool } from './pools/connections';
  * Колбэк каждого нового подключения (сокета)
  *
  * @param {WebSocket} socket
- * @param {IncomingMessage} req
+ * @param {{ connection: { remoteAddress } }} req
  */
 const onConnection = (socket, req) => {
     const connection = makeConnection(socket, req);

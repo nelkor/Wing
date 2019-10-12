@@ -66,9 +66,7 @@ const checkAuth = (auth, connection) => {
                 && attempts[userId] < Date.now() + 6e4;
 
             if (replace) {
-                const notice = { replacement: true };
-
-                inPool.connection.send('logout', notice);
+                inPool.connection.send('logout', { reason: 'replacement' });
 
                 inPool.disconnect();
                 inPool.connect(connection);
@@ -137,7 +135,7 @@ const makeReader = connection => {
     return async message => {
         switch (message.event) {
             case 'auth':
-                if (!message.data) return;
+                if (connection.player || !message.data) return;
 
                 const { name, password } = message.data;
 
@@ -147,8 +145,6 @@ const makeReader = connection => {
 
                 return checkAuth(await checkToken(message.data), connection);
             case 'reg':
-                break;
-            case 'logout':
                 break;
             case 'getState':
                 connection.send('state', 'connection');
